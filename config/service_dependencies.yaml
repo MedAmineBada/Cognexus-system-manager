@@ -1,0 +1,98 @@
+services:
+  ocr_engine:
+    description: "OCR processing for image-to-text"
+    default_enabled: true
+    endpoints:
+      scan:
+        description: "Scan and extract text from images"
+        default_enabled: true
+        depends_on: []
+
+  document_parser:
+    description: "PDF document parsing"
+    default_enabled: true
+    endpoints:
+      extract:
+        description: "Extract text from PDF documents"
+        default_enabled: true
+        depends_on: []
+
+  anti_cheat:
+    description: "Cheating detection system"
+    default_enabled: true
+    endpoints:
+      insert:
+        description: "Embed and insert exam answers for later comparison"
+        default_enabled: true
+        depends_on: []
+
+      report:
+        description: "Get a report of suspected cheating attempts"
+        default_enabled: true
+        depends_on: []
+
+  external_gateway:
+    description: "External API gateway for third-party integrations"
+    default_enabled: true
+    endpoints:
+      prompt:
+        description: "Prompt an LLM"
+        default_enabled: true
+        depends_on: []
+
+      upload:
+        description: "Upload files to cloudinary"
+        default_enabled: true
+        depends_on: []
+
+  exam_orchestrator:
+    description: "Exam orchestration service"
+    default_enabled: true
+    endpoints:
+      create_exam:
+        description: "Create new exam"
+        default_enabled: true
+        depends_on:
+          - document_parser.extract
+          - external_gateway.prompt
+          - external_gateway.upload
+
+      save_exam:
+        description: "Save a created exam"
+        default_enabled: true
+        depends_on: []
+
+      get_exam:
+        description: "Get a saved exam"
+        default_enabled: true
+        depends_on: []
+
+      create_correction:
+        description: "Create exam correction"
+        default_enabled: true
+        depends_on:
+          - exam_orchestrator.create_exam
+          - exam_orchestrator.save_exam
+          - document_parser.extract
+          - external_gateway.prompt
+          - external_gateway.upload
+
+      save_correction:
+        description: "Save a created correction"
+        default_enabled: true
+        depends_on:
+          - exam_orchestrator.create_exam
+          - exam_orchestrator.save_exam
+
+      get_correction:
+        description: "Get a saved correction"
+        default_enabled: true
+        depends_on: []
+
+      submit:
+        description: "Submit exam answers for grading"
+        default_enabled: true
+        depends_on:
+          - ocr_engine.scan
+          - external_gateway.prompt
+          - external_gateway.upload
