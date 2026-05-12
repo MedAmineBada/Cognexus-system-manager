@@ -3,6 +3,8 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 
+from api.v1.utils import AppException, app_exception_manager, default_exception_manager
+from api.v1.v1_router import v1_router
 from config import init_db, init_redis, close_redis
 from config.broker_config import load_service_config, sync_flags
 
@@ -20,6 +22,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.include_router(v1_router)
+
+app.add_exception_handler(AppException, app_exception_manager)
+app.add_exception_handler(Exception, default_exception_manager)
 
 if __name__ == "__main__":
     uvicorn.run(

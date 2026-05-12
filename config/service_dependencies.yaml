@@ -96,3 +96,9 @@ services:
           - ocr_engine.scan
           - external_gateway.prompt
           - external_gateway.upload
+          -
+      get_report:
+        description: "Get exam cheat report"
+        default_enabled: true
+        depends_on:
+          - anti_cheat.report
