@@ -72,6 +72,12 @@ services:
         default_enabled: true
         depends_on: []
 
+      get_grades:
+        description: "Get exam grades"
+        default_enabled: true
+        depends_on: []
+
+
       create_correction:
         description: "Create exam correction"
         default_enabled: true
@@ -107,6 +113,16 @@ services:
         default_enabled: true
         depends_on:
           - anti_cheat.report
+
+      modify_exam:
+        description: "Modify an exam"
+        default_enabled: true
+        depends_on: []
+
+      delete_exam:
+        description: "Delete an exam"
+        default_enabled: true
+        depends_on: []
 
   auth:
     description: "Authentication service"
