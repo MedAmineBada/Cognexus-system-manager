@@ -63,7 +63,12 @@ services:
         depends_on: []
 
       get_exam:
-        description: "Get a saved exam"
+        description: "Get a saved exam(s)"
+        default_enabled: true
+        depends_on: []
+
+      view_exam:
+        description: "View an exam"
         default_enabled: true
         depends_on: []
 
@@ -96,9 +101,238 @@ services:
           - ocr_engine.scan
           - external_gateway.prompt
           - external_gateway.upload
-          -
+
       get_report:
         description: "Get exam cheat report"
         default_enabled: true
         depends_on:
           - anti_cheat.report
+
+  auth:
+    description: "Authentication service"
+    default_enabled: true
+    endpoints:
+      student.login:
+        description: "Student login"
+        default_enabled: true
+        depends_on: []
+
+      student.register:
+        description: "Student register"
+        default_enabled: true
+        depends_on: []
+
+      teacher.login:
+        description: "Teacher login"
+        default_enabled: true
+        depends_on: []
+
+      teacher.register:
+        description: "Teacher register"
+        default_enabled: true
+        depends_on: []
+
+      admin.login:
+        description: "Admin login"
+        default_enabled: true
+        depends_on: []
+
+      verify-otp:
+        description: "Verify OTP"
+        default_enabled: true
+        depends_on: []
+
+      resend-otp:
+        description: "Resend OTP"
+        default_enabled: true
+        depends_on: []
+
+      forgot-password:
+        description: "Request password reset"
+        default_enabled: true
+        depends_on: []
+
+      reset-password:
+        description: "Reset password"
+        default_enabled: true
+        depends_on: []
+
+      # Protected auth
+      logout:
+        description: "Logout current user"
+        default_enabled: true
+        depends_on: []
+
+      refresh:
+        description: "Refresh access token"
+        default_enabled: true
+        depends_on: []
+
+      admin.users.create:
+        description: "Admin create user"
+        default_enabled: true
+        depends_on: []
+
+      users.me.get:
+        description: "Get current user profile"
+        default_enabled: true
+        depends_on: []
+
+      users.me.update:
+        description: "Update current user profile"
+        default_enabled: true
+        depends_on: []
+
+      users.me.password:
+        description: "Update current user password"
+        default_enabled: true
+        depends_on: []
+
+      users.me.image.upload:
+        description: "Upload current user profile image"
+        default_enabled: true
+        depends_on: []
+
+      users.me.image.delete:
+        description: "Delete current user profile image"
+        default_enabled: true
+        depends_on: []
+
+      users.list:
+        description: "List all users"
+        default_enabled: true
+        depends_on: []
+
+      users.students:
+        description: "Get all students"
+        default_enabled: true
+        depends_on: []
+
+      users.teachers:
+        description: "Get all teachers"
+        default_enabled: true
+        depends_on: []
+
+      users.lead-teachers:
+        description: "Get all lead teachers"
+        default_enabled: true
+        depends_on: []
+
+      users.by-email:
+        description: "Get user by email"
+        default_enabled: true
+        depends_on: []
+
+      users.by-id:
+        description: "Get user by ID"
+        default_enabled: true
+        depends_on: []
+
+      users.role:
+        description: "Update user role"
+        default_enabled: true
+        depends_on: []
+
+      users.delete:
+        description: "Delete user (soft or permanent)"
+        default_enabled: true
+        depends_on: []
+
+      users.reactivate:
+        description: "Reactivate user account"
+        default_enabled: true
+        depends_on: []
+
+      status.get:
+        description: "Get user status"
+        default_enabled: true
+        depends_on: []
+
+      status.update:
+        description: "Update user status"
+        default_enabled: true
+        depends_on: []
+
+  classes:
+    description: "Class management service"
+    default_enabled: true
+    endpoints:
+      create:
+        description: "Create a new class"
+        default_enabled: true
+        depends_on: []
+
+      list:
+        description: "List all classes"
+        default_enabled: true
+        depends_on: []
+
+      get:
+        description: "Get class details by ID"
+        default_enabled: true
+        depends_on: []
+
+      update:
+        description: "Update class information"
+        default_enabled: true
+        depends_on: []
+
+      soft-delete:
+        description: "Soft delete a class"
+        default_enabled: true
+        depends_on: []
+
+      permanent-delete:
+        description: "Permanently delete a class"
+        default_enabled: true
+        depends_on: []
+
+      subjects.add:
+        description: "Add subject to class"
+        default_enabled: true
+        depends_on: []
+
+      subjects.list:
+        description: "List all subjects in class"
+        default_enabled: true
+        depends_on: []
+
+      subjects.update:
+        description: "Update subject in class"
+        default_enabled: true
+        depends_on: []
+
+      subjects.soft-delete:
+        description: "Soft delete subject from class"
+        default_enabled: true
+        depends_on: []
+
+      subjects.permanent-delete:
+        description: "Permanently delete subject from class"
+        default_enabled: true
+        depends_on: []
+
+      enroll:
+        description: "Enroll student in class"
+        default_enabled: true
+        depends_on: []
+
+      students.list:
+        description: "List all students in class"
+        default_enabled: true
+        depends_on: []
+
+      students.update:
+        description: "Update student enrollment"
+        default_enabled: true
+        depends_on: []
+
+      students.soft-delete:
+        description: "Soft delete student enrollment"
+        default_enabled: true
+        depends_on: []
+
+      students.permanent-delete:
+        description: "Permanently delete student enrollment"
+        default_enabled: true
+        depends_on: []
