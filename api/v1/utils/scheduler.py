@@ -7,6 +7,7 @@ from config import get_redis
 
 _SECRET_HASH = "secrets"
 _SECRET_FIELD = "cognexus_secret"
+_JOIN_CODE_FIELD = "admin_join_code"
 
 _rotation_task: Optional[asyncio.Task] = None
 _rotation_lock = asyncio.Lock()
@@ -60,9 +61,11 @@ async def init_secret_rotation_scheduler():
     redis = get_redis()
 
     raw = await redis.hget(_SECRET_HASH, _SECRET_FIELD)
-
-    if not raw:
-        print("[SCHEDULER] No secret found in Redis, skipping scheduler init")
+    raw_code = await redis.hget(_SECRET_HASH, _JOIN_CODE_FIELD)
+    if not raw or not raw_code:
+        print(
+            "[SCHEDULER] Secret or join code not found in Redis, skipping scheduler init"
+        )
         return
 
     try:

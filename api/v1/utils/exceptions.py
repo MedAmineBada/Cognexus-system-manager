@@ -92,6 +92,17 @@ class ForbiddenException(AppException):
     """
 
     def __init__(
-        self, message: str = "Forbidden", status_code: int = status.HTTP_403_FORBIDDEN
+        self,
+        message: str = "Access is Forbidden",
+        status_code: int = status.HTTP_403_FORBIDDEN,
+    ) -> None:
+        super().__init__(message, status_code)
+
+
+class UnauthorizedException(AppException):
+    def __init__(
+        self,
+        message: str = "Wrong password or email",
+        status_code: int = status.HTTP_401_UNAUTHORIZED,
     ) -> None:
         super().__init__(message, status_code)

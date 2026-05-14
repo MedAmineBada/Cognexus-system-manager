@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from api.v1.services import rotate_secret
 from api.v1.utils import (
@@ -10,6 +11,8 @@ from api.v1.utils import (
     default_exception_manager,
     init_secret_rotation_scheduler,
     stop_secret_rotation_scheduler,
+    sqlalchemy_exception_manager,
+    sqlalchemy_integrity_exception_manager,
 )
 from api.v1.v1_router import v1_router
 from config import init_db, init_redis, close_redis
@@ -25,11 +28,21 @@ async def lifespan(app: FastAPI):
 
     redis = get_redis()
     existing_secret = await redis.hget("secrets", "cognexus_secret")
+    existing_code = await redis.hget("secrets", "admin_join_code")
 
-    if existing_secret:
-        print("[SECRET] Existing secret found in Redis")
+    if existing_secret and existing_code:
+        print("[STARTUP] Existing secret and join code found in Redis")
+
+    elif not existing_secret and not existing_code:
+        print("[STARTUP] Secret and Code not found, generating initial secret")
+        await rotate_secret()
+
+    elif not existing_secret:
+        print("[STARTUP] No secret found, generating initial secret")
+        await rotate_secret()
+
     else:
-        print("[SECRET] No secret found, generating initial secret")
+        print("[STARTUP] No code found, generating initial secret")
         await rotate_secret()
 
     await init_secret_rotation_scheduler()
@@ -46,6 +59,15 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(v1_router)
 
 app.add_exception_handler(AppException, app_exception_manager)
+app.add_exception_handler(
+    SQLAlchemyError,
+    sqlalchemy_exception_manager,
+)
+
+app.add_exception_handler(
+    IntegrityError,
+    sqlalchemy_integrity_exception_manager,
+)
 app.add_exception_handler(Exception, default_exception_manager)
 
 if __name__ == "__main__":

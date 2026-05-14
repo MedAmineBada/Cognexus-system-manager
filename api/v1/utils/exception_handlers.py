@@ -1,3 +1,4 @@
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -33,4 +34,32 @@ async def default_exception_manager(request: Request, exc: Exception) -> JSONRes
     return JSONResponse(
         content={"error": "Something went wrong."},
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )
+
+
+async def sqlalchemy_exception_manager(
+    request: Request,
+    exc: SQLAlchemyError,
+) -> JSONResponse:
+    """
+    Handles generic SQLAlchemy errors.
+    """
+
+    return JSONResponse(
+        content={"error": "Database error occurred."},
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )
+
+
+async def sqlalchemy_integrity_exception_manager(
+    request: Request,
+    exc: IntegrityError,
+) -> JSONResponse:
+    """
+    Handles integrity constraint violations.
+    """
+
+    return JSONResponse(
+        content={"error": "Resource already exists or constraint violated."},
+        status_code=status.HTTP_400_BAD_REQUEST,
     )
