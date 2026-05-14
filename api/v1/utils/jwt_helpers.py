@@ -111,3 +111,14 @@ async def get_token_type_from_payload(
         raise UnauthorizedException("Missing token type")
 
     return token_type
+
+
+async def verify_access_token(authorization: str):
+    token = extract_bearer_token(authorization)
+
+    payload = await validate_jwt_token(token=token)
+
+    if payload.get("type") != "access":
+        raise UnauthorizedException("Invalid access token")
+
+    return payload
