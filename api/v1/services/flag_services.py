@@ -1,7 +1,7 @@
 from typing import Dict, Any
 
-from api.v1.utils.flag_utils import publish_flag_changes, find_dependent_flags
 from api.v1.utils.exceptions import FlagNotFoundException, ServiceNotFoundException
+from api.v1.utils.flag_utils import publish_flag_changes, find_dependent_flags
 from config import get_redis, get_service_config
 
 
@@ -85,7 +85,7 @@ async def toggle_flag(flag_name: str) -> Dict[str, Any]:
 
 
 async def toggle_service(service_name: str) -> Dict[str, Any]:
-    """Toggle entire service - if any endpoint enabled, disable all. If all disabled, enable all."""
+    """Toggle entire service - if all endpoints enabled, disable all. If any disabled, enable all."""
     redis = get_redis()
     config = get_service_config()
 
@@ -94,7 +94,6 @@ async def toggle_service(service_name: str) -> Dict[str, Any]:
 
     service_data = config["services"][service_name]
 
-    # Check current state of all endpoints in service
     enabled_count = 0
     total_endpoints = 0
 
@@ -105,14 +104,13 @@ async def toggle_service(service_name: str) -> Dict[str, Any]:
         if current_value == "1":
             enabled_count += 1
 
-    # Decide action: if any enabled, disable all. If all disabled, enable all.
-    should_disable = enabled_count > 0
+    # If ALL are enabled → disable all. If ANY are disabled → enable all.
+    should_disable = enabled_count == total_endpoints
     action = "disabled" if should_disable else "enabled"
     target_value = "0" if should_disable else "1"
 
     changes = []
 
-    # Toggle all endpoints in service
     for endpoint_name in service_data["endpoints"]:
         flag_name = f"{service_name}.{endpoint_name}"
         await redis.hset("feature_flags", flag_name, target_value)
@@ -124,7 +122,6 @@ async def toggle_service(service_name: str) -> Dict[str, Any]:
             }
         )
 
-        # Handle cascading only for disables
         if should_disable:
             dependent_flags = find_dependent_flags(flag_name, config)
             for dependent_flag in dependent_flags:

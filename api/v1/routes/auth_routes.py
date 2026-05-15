@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Request, Response
 from fastapi.params import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,6 +9,7 @@ from api.v1.services import (
     create_user,
     sign_up,
     refresh_access_token,
+    logout_user,
 )
 from config import get_db
 
@@ -26,8 +27,25 @@ async def init(r: FirstRegisterRequest, session: AsyncSession = Depends(get_db))
 
 
 @router.post("/login")
-async def login(r: LoginRequest, session: AsyncSession = Depends(get_db)):
-    return await sign_in(r, session)
+async def login(
+    r: LoginRequest, response: Response, session: AsyncSession = Depends(get_db)
+):
+    data = await sign_in(r, session)
+
+    # Set refresh token as HttpOnly cookie
+    response.set_cookie(
+        key="refresh_token",
+        value=data["refresh_token"],
+        httponly=True,
+        samesite="lax",
+        secure=False,  # False only for local development
+        max_age=60 * 60 * 24,  # 1 day
+    )
+
+    return {
+        "access_token": data["access_token"],
+        "token_type": data["token_type"],
+    }
 
 
 @router.post("/register")
@@ -36,5 +54,16 @@ async def register(r: RegisterRequest, session: AsyncSession = Depends(get_db)):
 
 
 @router.post("/refresh")
-async def refresh(authorization: str = Header(...)):
-    return await refresh_access_token(authorization)
+async def refresh(
+    request: Request,
+    response: Response,
+):
+    return await refresh_access_token(
+        request,
+        response,
+    )
+
+
+@router.post("/logout")
+async def logout(response: Response):
+    return await logout_user(response)
