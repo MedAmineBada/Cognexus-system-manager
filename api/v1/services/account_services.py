@@ -1,7 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.v1.models import SuperAdmin
+from api.v1.models import SuperAdmin, Email
 from api.v1.utils import NotFoundException, ForbiddenException, ConflictException
+from api.v1.utils.email_utils import push_email
 
 
 async def activate_account(admin_id: str, acc_id: str, session: AsyncSession):
@@ -21,6 +22,13 @@ async def activate_account(admin_id: str, acc_id: str, session: AsyncSession):
 
     account.active = True
     await session.commit()
+
+    email = Email(
+        title="Account Activated",
+        content=f"Your account has been activated by {admin.username}\n({admin.username}'s email: {admin.email}).",
+        email=account.email,
+    )
+    await push_email(email)
 
     return {"success": "account activated"}
 
@@ -42,5 +50,12 @@ async def deactivate_account(admin_id: str, acc_id: str, session: AsyncSession):
 
     account.active = False
     await session.commit()
+
+    email = Email(
+        title="Account Deactivated",
+        content=f"Your account has been deactivated by {admin.username}\n({admin.username}'s email: {admin.email}).",
+        email=account.email,
+    )
+    await push_email(email)
 
     return {"success": "account deactivated"}
