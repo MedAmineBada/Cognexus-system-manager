@@ -49,6 +49,16 @@ async def deactivate_account(admin_id: str, acc_id: str, session: AsyncSession):
     if account.status != Status.active:
         raise ConflictException("Account already deactivated")
 
+    result = await session.execute(
+        select(SuperAdmin).where(SuperAdmin.status == Status.active)
+    )
+    active_users = result.scalars().all()
+
+    if len(active_users) == 1 and active_users[0].id == acc_id:
+        raise ConflictException(
+            "Cannot deactivate the last active account. At least one active account must exist."
+        )
+
     account.status = Status.inactive
     await session.commit()
 
