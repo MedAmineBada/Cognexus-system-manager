@@ -29,6 +29,17 @@ class AdminAdd(BaseModel):
     password: str
     status: Status
 
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Name cannot be empty")
+        if not value.replace(" ", "").isalpha():
+            raise ValueError("Name must contain only alphabetic characters")
+        if len(value) > 50:
+            raise ValueError("Name cannot exceed 50 characters")
+        return value
+
     @field_validator("password")
     @classmethod
     def validate_password(cls, value: str) -> str:
@@ -45,4 +56,22 @@ class AdminAdd(BaseModel):
         if not re.search(r"[^\w\s]", value):
             raise ValueError("Password must contain at least one symbol")
 
+        return value
+
+
+class AdminUpdate(BaseModel):
+    name: str | None = None
+    email: EmailStr | None = None
+    status: Status | None = None
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str | None) -> str | None:
+        if value is not None:
+            if not value.strip():
+                raise ValueError("Name cannot be empty")
+            if not value.replace(" ", "").isalpha():
+                raise ValueError("Name must contain only alphabetic characters")
+            if len(value) > 50:
+                raise ValueError("Name cannot exceed 50 characters")
         return value

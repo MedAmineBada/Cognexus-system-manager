@@ -3,7 +3,14 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.v1.models import SuperAdmin, Email, Status, FirsRegisterRequest, AdminAdd
+from api.v1.models import (
+    SuperAdmin,
+    Email,
+    Status,
+    FirsRegisterRequest,
+    AdminAdd,
+    AdminUpdate,
+)
 from api.v1.utils import NotFoundException, ForbiddenException, ConflictException
 from api.v1.utils.email_utils import push_email
 from api.v1.utils.password_helpers import hash_password
@@ -182,3 +189,90 @@ async def add_user(
     await session.commit()
 
     return {"success": "user created"}
+
+
+async def update_user(
+    user_id: str,
+    admin_id: str,
+    update_data: AdminUpdate,
+    session: AsyncSession,
+):
+    admin = await session.get(SuperAdmin, admin_id)
+
+    if not admin:
+        raise NotFoundException("Admin not found")
+    if admin.status != Status.active:
+        raise ForbiddenException("Account not activated")
+
+    target_user = await session.get(SuperAdmin, user_id)
+
+    if not target_user:
+        raise NotFoundException("User not found")
+
+    if update_data.email is not None:
+        result = await session.execute(
+            select(SuperAdmin).where(
+                SuperAdmin.email == update_data.email,
+                SuperAdmin.id != user_id,
+            )
+        )
+        existing_user = result.scalars().first()
+        if existing_user:
+            raise ConflictException("Email already in use by another user")
+        target_user.email = update_data.email
+
+    if update_data.name is not None:
+        target_user.username = update_data.name
+
+    if update_data.status is not None:
+        if update_data.status == Status.active and target_user.status != Status.active:
+            pass
+        elif update_data.status == Status.inactive:
+            result = await session.execute(
+                select(SuperAdmin).where(SuperAdmin.status == Status.active)
+            )
+            active_users = result.scalars().all()
+            if len(active_users) == 1 and active_users[0].id == user_id:
+                raise ConflictException(
+                    "Cannot deactivate the last active account. At least one active account must exist."
+                )
+        target_user.status = update_data.status
+
+    await session.commit()
+
+    return {
+        "success": "user updated",
+    }
+
+
+async def delete_user(
+    user_id: str,
+    admin_id: str,
+    session: AsyncSession,
+):
+    admin = await session.get(SuperAdmin, admin_id)
+
+    if not admin:
+        raise NotFoundException("Admin not found")
+    if admin.status != Status.active:
+        raise ForbiddenException("Account not activated")
+
+    target_user = await session.get(SuperAdmin, user_id)
+
+    if not target_user:
+        raise NotFoundException("User not found")
+
+    if target_user.status == Status.active:
+        result = await session.execute(
+            select(SuperAdmin).where(SuperAdmin.status == Status.active)
+        )
+        active_users = result.scalars().all()
+        if len(active_users) == 1 and active_users[0].id == user_id:
+            raise ConflictException(
+                "Cannot delete the last active account. At least one active account must exist."
+            )
+
+    await session.delete(target_user)
+    await session.commit()
+
+    return {"success": "user deleted"}

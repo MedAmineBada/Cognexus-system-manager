@@ -20,6 +20,17 @@ class FirsRegisterRequest(BaseModel):
 
     name: str
 
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Name cannot be empty")
+        if not value.replace(" ", "").isalpha():
+            raise ValueError("Name must contain only alphabetic characters")
+        if len(value) > 50:
+            raise ValueError("Name cannot exceed 50 characters")
+        return value
+
     @field_validator("password")
     @classmethod
     def validate_password(cls, value: str) -> str:
@@ -47,6 +58,17 @@ class RegisterRequest(BaseModel):
     name: str
 
     code: str = Field(min_length=6, max_length=6)
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Name cannot be empty")
+        if not value.replace(" ", "").isalpha():
+            raise ValueError("Name must contain only alphabetic characters")
+        if len(value) > 50:
+            raise ValueError("Name cannot exceed 50 characters")
+        return value
 
     @field_validator("password")
     @classmethod
