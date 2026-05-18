@@ -2,7 +2,13 @@ from fastapi import APIRouter, Header, Query
 from fastapi.params import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.v1.services import activate_account, deactivate_account, get_all_users
+from api.v1.models import AdminAdd
+from api.v1.services import (
+    activate_account,
+    deactivate_account,
+    get_all_users,
+    add_user,
+)
 from api.v1.utils import verify_access_token, get_user_id_from_payload
 from config import get_db
 
@@ -55,3 +61,15 @@ async def get_users(
         session,
         id,
     )
+
+
+@router.post("/add")
+async def add_admin(
+    admin: AdminAdd,
+    authorization: str = Header(...),
+    session: AsyncSession = Depends(get_db),
+):
+    payload = await verify_access_token(authorization)
+    admin_id = await get_user_id_from_payload(payload)
+
+    return await add_user(admin, admin_id, session)

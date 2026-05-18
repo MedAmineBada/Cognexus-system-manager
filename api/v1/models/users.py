@@ -1,5 +1,6 @@
 import enum
 
+from pydantic import BaseModel
 from sqlalchemy import Column, String, Enum
 
 from config import Base
@@ -19,3 +20,10 @@ class SuperAdmin(Base):
     username = Column(String(50), nullable=False, index=False)
     password = Column(String(255), nullable=False, index=False)
     status = Column(Enum(Status), nullable=False, default=Status.pending)
+
+
+class AdminAdd(BaseModel):
+    email: str
+    name: str
+    password: str
+    status: Status

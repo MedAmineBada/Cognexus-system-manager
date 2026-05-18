@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.v1.models import (
     LoginRequest,
     SuperAdmin,
-    FirstRegisterRequest,
     RegisterRequest,
     Status,
 )
@@ -32,32 +31,6 @@ async def first_user_check(session: AsyncSession):
         raise NotFoundException("No users in db")
 
     return {"message": "Users found"}
-
-
-async def create_user(
-    r: FirstRegisterRequest,
-    session: AsyncSession,
-    active: bool = False,
-):
-    result = await session.execute(select(SuperAdmin))
-
-    user = result.scalars().first()
-
-    if user:
-        raise ConflictException("There's Already at least one user")
-
-    user = SuperAdmin(
-        id=str(uuid.uuid4()),
-        email=r.email,
-        password=hash_password(r.password),
-        username=r.name,
-        status=Status.active if active else Status.pending,
-    )
-
-    session.add(user)
-    await session.commit()
-
-    return {"success": "user created"}
 
 
 async def sign_in(r: LoginRequest, session: AsyncSession):

@@ -2,11 +2,11 @@ from fastapi import APIRouter, Request, Response
 from fastapi.params import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.v1.models import LoginRequest, FirstRegisterRequest, RegisterRequest
+from api.v1.models import LoginRequest, FirsRegisterRequest, RegisterRequest
 from api.v1.services import (
     sign_in,
     first_user_check,
-    create_user,
+    create_first_user,
     sign_up,
     refresh_access_token,
     logout_user,
@@ -22,8 +22,8 @@ async def first_check(session: AsyncSession = Depends(get_db)):
 
 
 @router.post("/init")
-async def init(r: FirstRegisterRequest, session: AsyncSession = Depends(get_db)):
-    return await create_user(r, session, True)
+async def init(r: FirsRegisterRequest, session: AsyncSession = Depends(get_db)):
+    return await create_first_user(r, session, True)
 
 
 @router.post("/login")

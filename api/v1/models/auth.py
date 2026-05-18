@@ -13,7 +13,7 @@ class LoginResponse(BaseModel):
     refresh_token: str
 
 
-class FirstRegisterRequest(BaseModel):
+class FirsRegisterRequest(BaseModel):
     email: EmailStr
 
     password: str = Field(min_length=8)
