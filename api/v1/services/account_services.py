@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.v1.models import SuperAdmin, Email, Status
@@ -59,3 +60,51 @@ async def deactivate_account(admin_id: str, acc_id: str, session: AsyncSession):
     await push_email(email)
 
     return {"success": "account deactivated"}
+
+
+async def get_all_users(
+    admin_id: str,
+    session: AsyncSession,
+    user_id: str = None,
+):
+    admin = await session.get(SuperAdmin, admin_id)
+
+    if not admin:
+        raise NotFoundException("Admin not found")
+    if admin.status != Status.active:
+        raise ForbiddenException("Account not activated")
+
+    if user_id:
+        user = await session.get(SuperAdmin, user_id)
+        if not user:
+            raise NotFoundException(f"User with ID {user_id} not found")
+
+        return {
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "username": user.username,
+                "status": user.status.value,
+            },
+        }
+
+    result = await session.execute(select(SuperAdmin))
+    users = result.scalars().all()
+
+    status_order = {Status.active: 0, Status.pending: 1, Status.inactive: 2}
+
+    sorted_users = sorted(
+        users, key=lambda u: (status_order.get(u.status, 999), u.username.lower())
+    )
+
+    return {
+        "admin_id": admin_id,
+        "users": [
+            {
+                "id": user.id,
+                "username": user.username,
+                "status": user.status.value,
+            }
+            for user in sorted_users
+        ],
+    }

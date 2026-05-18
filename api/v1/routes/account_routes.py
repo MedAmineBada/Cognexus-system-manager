@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Header, Query
 from fastapi.params import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.v1.services import activate_account, deactivate_account
+from api.v1.services import activate_account, deactivate_account, get_all_users
 from api.v1.utils import verify_access_token, get_user_id_from_payload
 from config import get_db
 
@@ -38,4 +38,20 @@ async def activate(
         admin_id,
         acc_id,
         session,
+    )
+
+
+@router.get("")
+async def get_users(
+    id: str = Query(default=None),
+    authorization: str = Header(...),
+    session: AsyncSession = Depends(get_db),
+):
+    payload = await verify_access_token(authorization)
+    admin_id = await get_user_id_from_payload(payload)
+
+    return await get_all_users(
+        admin_id,
+        session,
+        id,
     )
