@@ -1,6 +1,14 @@
-from sqlalchemy import Column, String, Boolean
+import enum
+
+from sqlalchemy import Column, String, Enum
 
 from config import Base
+
+
+class Status(enum.Enum):
+    active = "active"
+    inactive = "inactive"
+    pending = "pending"
 
 
 class SuperAdmin(Base):
@@ -10,4 +18,4 @@ class SuperAdmin(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     username = Column(String(50), nullable=False, index=False)
     password = Column(String(255), nullable=False, index=False)
-    active = Column(Boolean, nullable=False, default=False)
+    status = Column(Enum(Status), nullable=False, default=Status.pending)

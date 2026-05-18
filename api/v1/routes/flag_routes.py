@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi.params import Depends, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.v1.models import SuperAdmin
+from api.v1.models import SuperAdmin, Status
 from api.v1.services import get_flags, toggle_flag, toggle_service
 from api.v1.utils import (
     verify_access_token,
@@ -26,7 +26,7 @@ async def get(
 
     if not admin:
         raise NotFoundException("Admin not found")
-    if not admin.active:
+    if admin.status != Status.active:
         raise ForbiddenException("Account not activated")
     return await get_flags()
 
@@ -44,7 +44,7 @@ async def toggle(
 
     if not admin:
         raise NotFoundException("Admin not found")
-    if not admin.active:
+    if admin.status != Status.active:
         raise ForbiddenException("Account not activated")
     return await toggle_flag(flag_name)
 
@@ -62,6 +62,6 @@ async def toggle_service_endpoint(
 
     if not admin:
         raise NotFoundException("Admin not found")
-    if not admin.active:
+    if admin.status != Status.active:
         raise ForbiddenException("Account not activated")
     return await toggle_service(service_name)

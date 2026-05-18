@@ -23,9 +23,9 @@ async def _sleep_until_and_rotate(exp: datetime):
         print("[SCHEDULER] Secret expired, rotating secret now")
 
         # Import here to avoid circular imports
-        from api.v1.services.secret_services import rotate_secret
+        from api.v1.services.secret_services import rotate_secrets
 
-        await rotate_secret()
+        await rotate_secrets()
 
     except asyncio.CancelledError:
         print("[SCHEDULER] Existing rotation schedule cancelled")

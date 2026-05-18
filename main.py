@@ -4,7 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
-from api.v1.services import rotate_secret
+from api.v1.services import rotate_secrets
 from api.v1.utils import (
     AppException,
     app_exception_manager,
@@ -35,15 +35,15 @@ async def lifespan(app: FastAPI):
 
     elif not existing_secret and not existing_code:
         print("[STARTUP] Secret and Code not found, generating initial secret")
-        await rotate_secret()
+        await rotate_secrets()
 
     elif not existing_secret:
         print("[STARTUP] No secret found, generating initial secret")
-        await rotate_secret()
+        await rotate_secrets()
 
     else:
         print("[STARTUP] No code found, generating initial secret")
-        await rotate_secret()
+        await rotate_secrets()
 
     await init_secret_rotation_scheduler()
 

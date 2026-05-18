@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.v1.models import SuperAdmin, Email
+from api.v1.models import SuperAdmin, Email, Status
 from api.v1.utils import NotFoundException, ForbiddenException, ConflictException
 from api.v1.utils.email_utils import push_email
 
@@ -10,17 +10,17 @@ async def activate_account(admin_id: str, acc_id: str, session: AsyncSession):
 
     if not admin:
         raise NotFoundException("Admin not found")
-    if not admin.active:
+    if admin.status != Status.active:
         raise ForbiddenException("Account not activated")
 
     account = await session.get(SuperAdmin, acc_id)
 
     if not account:
         raise NotFoundException("Account not found")
-    if account.active:
+    if account.status == Status.active:
         raise ConflictException("Account already activated")
 
-    account.active = True
+    account.status = Status.active
     await session.commit()
 
     email = Email(
@@ -38,17 +38,17 @@ async def deactivate_account(admin_id: str, acc_id: str, session: AsyncSession):
 
     if not admin:
         raise NotFoundException("Admin not found")
-    if not admin.active:
+    if admin.status != Status.active:
         raise ForbiddenException("Account not activated")
 
     account = await session.get(SuperAdmin, acc_id)
 
     if not account:
         raise NotFoundException("Account not found")
-    if not account.active:
+    if account.status != Status.active:
         raise ConflictException("Account already deactivated")
 
-    account.active = False
+    account.status = Status.inactive
     await session.commit()
 
     email = Email(

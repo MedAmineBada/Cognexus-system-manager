@@ -9,6 +9,7 @@ from api.v1.models import (
     SuperAdmin,
     FirstRegisterRequest,
     RegisterRequest,
+    Status,
 )
 from api.v1.utils import (
     NotFoundException,
@@ -50,7 +51,7 @@ async def create_user(
         email=r.email,
         password=hash_password(r.password),
         username=r.name,
-        active=active,
+        status=Status.active if active else Status.pending,
     )
 
     session.add(user)
@@ -72,7 +73,7 @@ async def sign_in(r: LoginRequest, session: AsyncSession):
     if not verify_password(r.password, user.password):
         raise UnauthorizedException("Wrong password")
 
-    if not user.active:
+    if user.status != Status.active:
         raise UnauthorizedException("Account is not activated")
 
     access_token = await generate_jwt_token(user.id, "access")
@@ -106,7 +107,7 @@ async def sign_up(r: RegisterRequest, session: AsyncSession):
         email=r.email,
         password=hash_password(r.password),
         username=r.name,
-        active=False,
+        status=Status.pending,
     )
 
     session.add(user)

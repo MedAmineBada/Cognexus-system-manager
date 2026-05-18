@@ -32,9 +32,9 @@ async def get_db():
 
 
 async def init_db():
-    from api.v1.models import SuperAdmin
+    from api.v1.models import SuperAdmin, Status
 
-    _ = SuperAdmin
+    _ = SuperAdmin, Status
 
     max_time = 30
     interval = 2

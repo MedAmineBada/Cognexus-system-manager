@@ -7,7 +7,7 @@ from api.v1.utils.scheduler import schedule_secret_rotation
 from config import get_redis
 
 
-async def rotate_secret():
+async def rotate_secrets():
     redis = get_redis()
 
     now = datetime.now()
@@ -66,5 +66,22 @@ async def rotate_secret():
     return {
         "iat": res["iat"],
         "exp": res["exp"],
+        "jwt_secret": json.loads(raw_secret)["val"],
+        "admin_code": json.loads(raw_code)["val"],
+    }
+
+
+async def get_secrets():
+    redis = get_redis()
+
+    raw_secret = await redis.hget("secrets", "cognexus_secret")
+    raw_code = await redis.hget("secrets", "admin_join_code")
+
+    res = json.loads(raw_secret)
+
+    return {
+        "iat": res["iat"],
+        "exp": res["exp"],
+        "jwt_secret": json.loads(raw_secret)["val"],
         "admin_code": json.loads(raw_code)["val"],
     }
