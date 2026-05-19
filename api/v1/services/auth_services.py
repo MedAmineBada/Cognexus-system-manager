@@ -54,6 +54,7 @@ async def sign_in(r: LoginRequest, session: AsyncSession):
     refresh_token = await generate_jwt_token(user.id, "refresh", 1440)
 
     return {
+        "id": user.id,
         "access_token": access_token,
         "refresh_token": refresh_token,
         "token_type": "Bearer",

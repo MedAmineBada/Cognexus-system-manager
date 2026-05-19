@@ -2,7 +2,13 @@ from fastapi import APIRouter, Request, Response
 from fastapi.params import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.v1.models import LoginRequest, FirsRegisterRequest, RegisterRequest
+from api.v1.models import (
+    LoginRequest,
+    FirsRegisterRequest,
+    RegisterRequest,
+    OTPRequest,
+    PasswordChangeRequest,
+)
 from api.v1.services import (
     sign_in,
     first_user_check,
@@ -10,6 +16,8 @@ from api.v1.services import (
     sign_up,
     refresh_access_token,
     logout_user,
+    request_otp,
+    change_password,
 )
 from config import get_db
 
@@ -43,6 +51,7 @@ async def login(
     )
 
     return {
+        "user_id": data["id"],
         "access_token": data["access_token"],
         "token_type": data["token_type"],
     }
@@ -67,3 +76,13 @@ async def refresh(
 @router.post("/logout")
 async def logout(response: Response):
     return await logout_user(response)
+
+
+@router.post("/request-otp")
+async def otp(r: OTPRequest, session: AsyncSession = Depends(get_db)):
+    return await request_otp(r, session)
+
+
+@router.post("/change-password")
+async def change_pw(r: PasswordChangeRequest, session: AsyncSession = Depends(get_db)):
+    return await change_password(r, session)
